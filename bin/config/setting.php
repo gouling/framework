@@ -16,7 +16,7 @@
         'component' => array(
             'db' => array(
                 'class' => 'CDBMySQL',
-                'dsn' => 'mysql:host=127.0.0.1;dbname=framework',
+                'dsn' => 'mysql:unix_socket=/dev/shm/mysql.sock;dbname=framework',
                 'username' => 'root',
                 'password' => 'root',
                 'options' => array(
