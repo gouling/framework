@@ -1,5 +1,4 @@
 <?php
-	print_r($data);
-	print_r(Yii::app());
+	var_dump($data, Yii::app());
 ?>
 <img src="<?php echo Yii::app()->image; ?>/bg.jpg"/>
