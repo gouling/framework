@@ -1,67 +1,67 @@
 <?php
 
     class CRedis {
-        private $_redis = array();
-        private $_virtualNode = array();
-        private $_virtualKeys = array();
-        private $_virtualKey = 0;
-        private $_virtualNum = 10;
-        private $_keyNode = 0;
+        private $__redis = array();
+        private $__virtualNode = array();
+        private $__virtualKeys = array();
+        private $__virtualKey = 0;
+        private $__virtualNum = 10;
+        private $__keyNode = 0;
 
         public function __construct($config) {
             foreach ($config['host'] as $key => $val) {
-                for ($i = 0; $i < $this->_virtualNum; $i++) {
-                    $this->_virtualNode[abs(crc32($val . '#' . $i))] = $val . '#' . $i;
+                for ($i = 0; $i < $this->__virtualNum; $i++) {
+                    $this->__virtualNode[abs(crc32($val . '#' . $i))] = $val . '#' . $i;
                 }
             }
-            ksort($this->_virtualNode);
-            $this->_virtualKeys = array_keys($this->_virtualNode);
+            ksort($this->__virtualNode);
+            $this->__virtualKeys = array_keys($this->__virtualNode);
         }
 
-        private function _connect($key) {
-            $this->_keyNode = abs(crc32($key));
-            $this->_virtualKey = $this->_findNode();
-            $host = $this->_virtualNode[$this->_virtualKey];
+        private function __connect($key) {
+            $this->__keyNode = abs(crc32($key));
+            $this->__virtualKey = $this->__findNode();
+            $host = $this->__virtualNode[$this->__virtualKey];
             list($host, $num) = explode('#', $host);
             list($host, $port) = explode(':', $host);
-            $this->_redis[$this->_virtualKey] = new Redis();
-            $this->_redis[$this->_virtualKey]->connect($host, $port);
+            $this->__redis[$this->__virtualKey] = new Redis();
+            $this->__redis[$this->__virtualKey]->connect($host, $port);
 
-            return $this->_redis[$this->_virtualKey];
+            return $this->__redis[$this->__virtualKey];
         }
 
-        private function _findNode() {
-            $low = $this->_virtualKeys[0];
-            $high = $this->_virtualKeys[count($this->_virtualKeys) - 1];
-            if ($this->_keyNode < $low || $this->_keyNode > $high) {
+        private function __findNode() {
+            $low = $this->__virtualKeys[0];
+            $high = $this->__virtualKeys[count($this->__virtualKeys) - 1];
+            if ($this->__keyNode < $low || $this->__keyNode > $high) {
                 return $low;
             } else {
-                foreach ($this->_virtualKeys as $val) {
-                    if ($this->_keyNode > $val) {
+                foreach ($this->__virtualKeys as $val) {
+                    if ($this->__keyNode > $val) {
                         $low = $val;
                     }
-                    if ($this->_keyNode < $val) {
+                    if ($this->__keyNode < $val) {
                         $high = $val;
                         break;
                     }
                 }
 
-                return $this->_keyNode - $low < abs($this->_keyNode - $high) ? $low : $high;
+                return $this->__keyNode - $low < abs($this->__keyNode - $high) ? $low : $high;
             }
         }
 
         public function set($key, $value) {
-            return $this->_connect($key)->set($key, $value);
+            return $this->__connect($key)->set($key, $value);
         }
 
         public function get($key) {
-            return $this->_connect($key)->get($key);
+            return $this->__connect($key)->get($key);
         }
 
         public function __destruct() {
-            foreach ($this->_redis as $key => $redis) {
+            foreach ($this->__redis as $key => $redis) {
                 $redis->close();
-                unset($this->_redis[$key]);
+                unset($this->__redis[$key]);
             }
         }
     }
