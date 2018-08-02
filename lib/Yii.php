@@ -11,34 +11,39 @@
         );
 
         public function __construct() {
-            $this->setException();
-            $this->setCore();
-            $this->setConfig();
-            $this->setRequest();
-            $this->setResource();
+            $this->__setException();
+            $this->__setCore();
+            $this->__setConfig();
+            $this->__setRequest();
+            $this->__setResource();
         }
 
-        public function setException() {
-            set_error_handler(array($this, 'Exception'));
+        private function __setException() {
+            set_error_handler(array($this, 'Error'));
+            set_exception_handler(array($this, 'Exception'));
         }
 
-        public function Exception($code, $msg) {
-            //exit("code: {$code}, message: {$msg}");
+        public function Error($code, $msg) {
+            exit("code: {$code}, message: {$msg}");
+        }
+        
+        public function Exception($exception) {
+            exit("code: {$exception->getCode()}, message: {$exception->getMessage()}");
         }
 
-        private function setCore() {
+        private function __setCore() {
             foreach (self::$coreMap as $core) {
                 set_include_path(get_include_path() . PATH_SEPARATOR . getcwd() . DIRECTORY_SEPARATOR . self::$lib . DIRECTORY_SEPARATOR . $core);
             }
         }
 
-        private function setConfig() {
+        private function __setConfig() {
             if (isset(self::$config['import'])) {
-                $this->setImport(self::$config['import']);
+                $this->__setImport(self::$config['import']);
                 unset(self::$config['import']);
             }
             if (isset(self::$config['component'])) {
-                $this->setComponent(self::$config['component']);
+                $this->__setComponent(self::$config['component']);
                 unset(self::$config['component']);
             }
             foreach (self::$config as $config_key => $config_value) {
@@ -46,13 +51,13 @@
             }
         }
 
-        private function setImport($classMap) {
+        private function __setImport($classMap) {
             foreach ($classMap as $class) {
                 set_include_path(get_include_path() . PATH_SEPARATOR . getcwd() . DIRECTORY_SEPARATOR . self::$config['base'] . DIRECTORY_SEPARATOR . $class);
             }
         }
 
-        private function setComponent($components) {
+        private function __setComponent($components) {
             foreach ($components as $component_key => $component_config) {
                 if (isset($component_config['class'])) {
                     $this->$component_key = new $component_config['class']($components[$component_key]);
@@ -60,13 +65,13 @@
             }
         }
 
-        private function setRequest() {
+        private function __setRequest() {
             $this->controller = isset($_GET['c']) ? $_GET['c'] : self::$config['defaultController'];
             $this->action = isset($_GET['a']) ? $_GET['a'] : self::$config['defaultAction'];
             $this->view = isset($_GET['view']) ? $_GET['view'] : self::$config['defaultView'];
         }
 
-        private function setResource() {
+        private function __setResource() {
             $this->image = "{$this->base}/view/{$this->view}/{$this->image}";
         }
 

@@ -1,5 +1,4 @@
 <?php
-
     class User extends CModel {
         public static function model($className = __CLASS__) {
             return parent::model($className);
@@ -13,5 +12,4 @@
             return $this->execute('UPDATE tbl_school SET time=:time WHERE id=:id', array(':time' => time(), ':id' => 1));
         }
     }
-
 ?>
